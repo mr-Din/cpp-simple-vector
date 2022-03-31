@@ -19,12 +19,20 @@ public:
     }
 
     ArrayPtr(const ArrayPtr&) = delete;
+    ArrayPtr& operator=(const ArrayPtr&) = delete;
+
+    ArrayPtr(ArrayPtr&& other) {
+        swap(other);
+    }
+
+    ArrayPtr& operator=(ArrayPtr&& other) {
+        swap(other);
+        return *this;
+    }
 
     ~ArrayPtr() {
         delete[] raw_ptr_;
     }
-
-    ArrayPtr& operator=(const ArrayPtr&) = delete;
 
     [[nodiscard]] Type* Release() noexcept {
         Type* tmp = raw_ptr_;

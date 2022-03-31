@@ -95,10 +95,12 @@ public:
 	}
 	
 	Type& operator[](size_t index) noexcept {
+		assert(index < size_);
 		return items_[index];
 	}
 
 	const Type& operator[](size_t index) const noexcept {
+		assert(index < size_);
 		return items_[index];
 	}
 
@@ -175,6 +177,7 @@ public:
 	}
 
 	Iterator Insert(ConstIterator pos, Type value) {
+		assert(pos >= begin() && pos <= end());
 		Iterator it_return = const_cast<Iterator> (pos);
 		if (size_ < capacity_) {
 			std::move_backward(it_return, end(), end() + 1);
@@ -183,18 +186,11 @@ public:
 			return it_return;
 		}
 		else {
-			size_t new_size = size_ + 1;
-			size_t new_capacity = std::max(new_size, capacity_ * 2);
-			ArrayPtr<Type> tmp(new_capacity);
-			std::move(begin(), it_return, tmp.Get());
-			auto it_value = tmp.Get() + (it_return - begin());
-			*it_value = std::move(value);
-			std::move(it_return, end(), it_value + 1);
-			
-			items_.swap(tmp);
-			size_ = new_size;
-			capacity_ = new_capacity;
-			return it_value;
+			auto dist = std::distance(begin(), it_return);
+			Resize(size_ + 1);
+			std::move_backward(begin() + dist, end()-1, end());
+			items_[dist] = std::move(value);
+			return begin() + dist;
 		}
 	}
 
@@ -204,6 +200,7 @@ public:
 	}
 
 	Iterator Erase(ConstIterator pos) {
+		assert(pos >= begin() && pos < end());
 		Iterator it_return = const_cast<Iterator> (pos);
 		std::move(std::next(it_return), end(), it_return);
 		--size_;
